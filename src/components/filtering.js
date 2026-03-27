@@ -1,40 +1,38 @@
 import {createComparison, defaultRules} from "../lib/compare.js";
 
-
-const compare = createComparison(defaultRules);
-
 export function initFiltering(elements, indexes) {
 
-    
-    Object.keys(indexes).forEach((elementName) => {
-        elements[elementName].append(
-            ...Object.values(indexes[elementName]).map(name => {
+    Object.keys(indexes).forEach((name) => {
+        elements[name].append(
+            ...Object.values(indexes[name]).map(value => {
                 const option = document.createElement('option');
-                option.value = name;
-                option.textContent = name;
+                option.value = value;
+                option.textContent = value;
                 return option;
             })
         );
     });
 
+    const compare = createComparison(defaultRules);
+
     return (data, state, action) => {
 
-        
-        if (action && action.name === 'clear') {
-            const field = action.dataset.field;
-            const parent = action.parentElement;
-            const input = parent.querySelector('input, select');
+        const from = parseFloat(state.totalFrom);
+        const to = parseFloat(state.totalTo);
 
-            if (input) {
-                input.value = '';
-            }
-
-            if (field in state) {
-                state[field] = '';
-            }
+        if (!isNaN(from) || !isNaN(to)) {
+            state.total = [from, to];
         }
 
-        
+        if (action && action.name === 'clear') {
+            const field = action.dataset.field;
+
+            const input = action.parentElement.querySelector('input');
+            if (input) input.value = '';
+
+            state[field] = '';
+        }
+
         return data.filter(row => compare(row, state));
     }
 }
